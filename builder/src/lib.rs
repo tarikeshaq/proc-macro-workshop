@@ -20,8 +20,7 @@ fn impl_builder_derive(struct_name: &Ident, ast: &DeriveInput) -> Result<TokenSt
     Ok(match &ast.data {
         Data::Struct(data) => match &data.fields {
             Fields::Named(fields) => {
-                let builder_name =
-                    syn::Ident::new(&format!("{struct_name}Builder"), ast.span());
+                let builder_name = syn::Ident::new(&format!("{struct_name}Builder"), ast.span());
                 let fields = fields
                     .named
                     .iter()
