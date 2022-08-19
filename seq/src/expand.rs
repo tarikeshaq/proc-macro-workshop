@@ -31,7 +31,7 @@ impl Seq {
                                     stream_iter.next();
                                     res.push(TokenTree::Ident(proc_macro2::Ident::new(
                                         &format!("{}{}", ident.to_string(), to_replace_with),
-                                        tt.span(),
+                                        ident.span(),
                                     )));
                                 } else {
                                     // This is probably a compiler error
