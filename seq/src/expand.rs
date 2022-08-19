@@ -1,4 +1,4 @@
-use proc_macro2::TokenTree;
+use proc_macro2::{TokenTree, Ident};
 use quote::quote;
 
 use crate::Seq;
@@ -7,21 +7,16 @@ use crate::Seq;
 
 impl Seq {
     pub(crate) fn expand(&self) -> syn::Result<proc_macro2::TokenStream> {
-        let from_num = self.from.base10_parse::<usize>()?;
-        let to_num = self.to.base10_parse::<usize>()?;
-        let mut result: Vec<proc_macro2::TokenStream> = Vec::with_capacity(to_num - from_num);
-        for i in from_num..to_num {
-            result.push(self.replace_ident(self.content.clone(), i)?);
-        }
+        let content = &self.content;
         Ok(quote! {
-            #(#result)*
+            #content
         })
     }
 
-    fn replace_ident(
-        &self,
+    pub(crate) fn replace_ident(
         stream: proc_macro2::TokenStream,
         to_replace_with: usize,
+        replace_ident: &Ident
     ) -> syn::Result<proc_macro2::TokenStream> {
         let mut res = Vec::new();
         let mut stream_iter = stream.into_iter().peekable();
@@ -32,7 +27,7 @@ impl Seq {
                         if let Some(TokenTree::Ident(_)) = res.last() {
                             let ident = res.pop().unwrap();
                             if let Some(TokenTree::Ident(candidate_ident)) = stream_iter.peek() {
-                                if *candidate_ident == self.ident {
+                                if *candidate_ident == *replace_ident {
                                     stream_iter.next();
                                     res.push(TokenTree::Ident(proc_macro2::Ident::new(
                                         &format!("{}{}", ident.to_string(), to_replace_with),
@@ -57,7 +52,7 @@ impl Seq {
                     }
                 }
                 TokenTree::Ident(ident) => {
-                    let mut to_add = if *ident == self.ident {
+                    let mut to_add = if *ident == *replace_ident {
                         TokenTree::Literal(proc_macro2::Literal::usize_unsuffixed(to_replace_with))
                     } else {
                         tt.clone()
@@ -66,7 +61,7 @@ impl Seq {
                     res.push(to_add);
                 }
                 TokenTree::Group(group) => {
-                    let inner_stream = self.replace_ident(group.stream(), to_replace_with)?;
+                    let inner_stream = Self::replace_ident(group.stream(), to_replace_with, replace_ident)?;
                     let mut to_add =
                         TokenTree::Group(proc_macro2::Group::new(group.delimiter(), inner_stream));
                     to_add.set_span(tt.span());

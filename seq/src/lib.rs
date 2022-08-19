@@ -4,9 +4,6 @@ use proc_macro::TokenStream;
 mod parse;
 mod expand;
 struct Seq {
-    ident: syn::Ident,
-    from: syn::LitInt,
-    to: syn::LitInt,
     content: proc_macro2::TokenStream,
 }
 
