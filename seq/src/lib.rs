@@ -1,8 +1,7 @@
 use proc_macro::TokenStream;
 
-
-mod parse;
 mod expand;
+mod parse;
 struct Seq {
     content: proc_macro2::TokenStream,
 }

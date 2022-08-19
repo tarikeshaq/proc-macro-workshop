@@ -1,9 +1,7 @@
-use proc_macro2::{TokenTree, Ident};
+use proc_macro2::{Ident, TokenTree};
 use quote::quote;
 
 use crate::Seq;
-
-
 
 impl Seq {
     pub(crate) fn expand(&self) -> syn::Result<proc_macro2::TokenStream> {
@@ -16,7 +14,7 @@ impl Seq {
     pub(crate) fn replace_ident(
         stream: proc_macro2::TokenStream,
         to_replace_with: usize,
-        replace_ident: &Ident
+        replace_ident: &Ident,
     ) -> syn::Result<proc_macro2::TokenStream> {
         let mut res = Vec::new();
         let mut stream_iter = stream.into_iter().peekable();
@@ -61,7 +59,8 @@ impl Seq {
                     res.push(to_add);
                 }
                 TokenTree::Group(group) => {
-                    let inner_stream = Self::replace_ident(group.stream(), to_replace_with, replace_ident)?;
+                    let inner_stream =
+                        Self::replace_ident(group.stream(), to_replace_with, replace_ident)?;
                     let mut to_add =
                         TokenTree::Group(proc_macro2::Group::new(group.delimiter(), inner_stream));
                     to_add.set_span(tt.span());
